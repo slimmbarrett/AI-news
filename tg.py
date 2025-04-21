@@ -19,6 +19,7 @@ source_channels = [
     'discoveryit_channel',
     'black_triangle_tg',
     'technosplit'
+    'jumbuu'
 ]
 
 # Канал, куда отправлять обработанные посты
