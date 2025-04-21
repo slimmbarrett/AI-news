@@ -5,7 +5,6 @@ from keep_alive import keep_alive
 from telethon import TelegramClient, events
 import telethon.tl.types
 
-# Запускаем keep_alive сервер для поддержки активности
 keep_alive()
 
 # ===== Настройки Telegram API =====
@@ -13,24 +12,22 @@ api_id = '25448007'
 api_hash = 'f4dba8e8c884bbabfd9cd6a742eeb695'
 
 # ===== Настройки каналов =====
-# Здесь НЕТ https://t.me/, только username каналов!
 source_channels = [
     'neviaia',
     'discoveryit_channel',
     'black_triangle_tg',
-    'technosplit'
+    'technosplit',
     'jumbuu'
 ]
 
-# Канал, куда отправлять обработанные посты
-my_channel = 'Cortex_Innovation'  # Тоже без https://t.me/
+# Канал для публикации
+my_channel = 'Cortex_Innovation'
 
 # ===== Настройки DeepSeek API =====
 deepseek_api_url = 'https://api.deepseek.com/v1/chat/completions'
 api_key = 'sk-39d991d8c2664a3881a6bef71c172299'
 
 # ===== Инициализация клиента =====
-# Важно! Здесь 'anon' — это название session-файла без .session
 client = TelegramClient('anon', api_id, api_hash)
 
 async def process_text_with_deepseek(text):
@@ -38,12 +35,12 @@ async def process_text_with_deepseek(text):
         'Authorization': f'Bearer {api_key}',
         'Content-Type': 'application/json'
     }
-    
+
     system_prompt = """Ты - профессиональный редактор и аналитик. 
     Твоя задача - проанализировать предоставленный текст и создать новое, 
     более структурированное и информативное сообщение для канала в телеграмме "Схемный Переулок". 
     Сделай так, чтобы текст был понятен для людей, дружественно и по пунктам. Максимальное количество символов 500."""
-    
+
     payload = {
         'model': 'deepseek-chat',
         'messages': [
@@ -52,7 +49,7 @@ async def process_text_with_deepseek(text):
         ],
         'temperature': 0.7
     }
-    
+
     async with aiohttp.ClientSession() as session:
         try:
             async with session.post(deepseek_api_url, headers=headers, json=payload) as response:
