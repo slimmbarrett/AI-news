@@ -14,6 +14,7 @@ api_hash = 'f4dba8e8c884bbabfd9cd6a742eeb695'
 
 # ===== Каналы =====
 source_channels = [
+    'neviaiaaa'
     'discoveryit_channel',
     'black_triangle_tg',
     'technosplit',
