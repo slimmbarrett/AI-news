@@ -3,15 +3,16 @@ import aiohttp
 from keep_alive import keep_alive
 
 from telethon import TelegramClient, events
-import telethon.tl.types
+from telethon.tl.types import MessageMediaDocument, MessageMediaPhoto, MessageMediaWebPage
 
+# ===== Запуск mini-сервера для Railway =====
 keep_alive()
 
 # ===== Настройки Telegram API =====
-api_id = '25448007'
+api_id = 25448007
 api_hash = 'f4dba8e8c884bbabfd9cd6a742eeb695'
 
-# ===== Настройки каналов =====
+# ===== Каналы =====
 source_channels = [
     'discoveryit_channel',
     'black_triangle_tg',
@@ -19,7 +20,7 @@ source_channels = [
     'jumbuu'
 ]
 
-# Канал для публикации
+# Канал для публикации (без https://t.me/)
 my_channel = 'Cortex_Innovation'
 
 # ===== Настройки DeepSeek API =====
@@ -38,7 +39,7 @@ async def process_text_with_deepseek(text):
     system_prompt = """Ты - профессиональный редактор и аналитик. 
     Твоя задача - проанализировать предоставленный текст и создать новое, 
     более структурированное и информативное сообщение для канала в телеграмме "Схемный Переулок". 
-    Сделай так, чтобы текст был понятен для людей, дружественно и по пунктам. Максимальное количество символов 500."""
+    Сделай так, чтобы текст был понятен для людей, в дружественной форме, попунктам. Максимальное количество символов 500."""
 
     payload = {
         'model': 'deepseek-chat',
@@ -64,47 +65,41 @@ async def process_text_with_deepseek(text):
 async def handler(event):
     try:
         source_channel = await event.get_chat()
-        print(f'Получен новый пост из канала: {source_channel.title}')
-        
+        print(f'\n[+] Получен новый пост из канала: {source_channel.title}')
+
         original_text = event.text or ""
-        print(f'Текст поста: {original_text[:100]}...')
+        print(f'[i] Оригинальный текст: {original_text[:100]}...')
 
         processed_text = ""
         if original_text:
             processed_text = await process_text_with_deepseek(original_text)
-            print(f'Обработанный текст: {processed_text[:100]}...')
+            print(f'[+] Обработанный текст: {processed_text[:100]}...')
 
         if event.media:
-            if isinstance(event.media, telethon.tl.types.MessageMediaWebPage):
-                if processed_text:
-                    await client.send_message(my_channel, processed_text)
-                    print('Веб-превью отправлено как текст')
-            elif isinstance(event.media, (telethon.tl.types.MessageMediaPhoto, 
-                                           telethon.tl.types.MessageMediaDocument,
-                                           telethon.tl.types.MessageMediaVideo)):
+            if isinstance(event.media, (MessageMediaPhoto, MessageMediaDocument, MessageMediaWebPage)):
                 try:
                     await client.send_file(my_channel, event.media, caption=processed_text)
-                    print('Медиа успешно отправлено')
+                    print('[✅] Медиа успешно отправлено в канал!')
                 except Exception as e:
-                    print(f'Ошибка при отправке медиа: {str(e)}')
+                    print(f'[!] Ошибка при отправке медиа: {str(e)}')
                     if processed_text:
                         await client.send_message(my_channel, processed_text)
-                        print('Отправлен только текст')
+                        print('[!] Отправлен только текст из-за ошибки с медиа')
             else:
                 if processed_text:
                     await client.send_message(my_channel, processed_text)
-                    print('Неподдерживаемый тип медиа, отправлен текст')
+                    print('[!] Неподдерживаемое медиа, отправлен только текст')
         elif processed_text:
             await client.send_message(my_channel, processed_text)
-            print('Только текст отправлен')
+            print('[✅] Текст без медиа успешно отправлен!')
         else:
-            print('Пустой пост, пропущен')
+            print('[i] Пустой пост пропущен.')
     except Exception as e:
-        print(f'Ошибка при обработке поста: {str(e)}')
+        print(f'[❌] Ошибка при обработке поста: {str(e)}')
 
 async def main():
     await client.start()
-    print('Бот успешно запущен и ожидает новые сообщения...')
+    print('✅ Бот успешно запущен и ожидает новые сообщения...')
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
